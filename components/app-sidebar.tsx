@@ -5,20 +5,19 @@ import Link from "next/link"
 import Image from "next/image"
 import { useSession } from "@/lib/auth-client"
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
-  IconListDetails,
-  IconReport,
-  IconSearch,
+  IconChartBar,
+  IconMessageCircle,
+  IconCreditCard,
+  IconTrendingUp,
+  IconDownload,
   IconSettings,
-  IconUsers,
+  IconDatabase,
+  IconReport,
+  IconHelp,
+  IconSearch,
+  IconReceipt,
+  IconWallet,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -39,110 +38,121 @@ const staticData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "AI Chat",
+      url: "/chat",
+      icon: IconMessageCircle,
+    },
+    {
+      title: "Transactions",
+      url: "/transactions",
+      icon: IconCreditCard,
     },
     {
       title: "Analytics",
-      url: "#",
+      url: "/analytics",
       icon: IconChartBar,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      title: "Reports",
+      url: "/reports",
+      icon: IconReport,
     },
   ],
-  navClouds: [
+  navFinance: [
     {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
+      title: "Income",
+      icon: IconTrendingUp,
+      url: "/income",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "All Income",
+          url: "/income",
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "By Category",
+          url: "/income/categories",
+        },
+        {
+          title: "Recurring Income",
+          url: "/income/recurring",
         },
       ],
     },
     {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
+      title: "Expenses",
+      icon: IconReceipt,
+      url: "/expenses",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "All Expenses",
+          url: "/expenses",
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "By Category",
+          url: "/expenses/categories",
+        },
+        {
+          title: "Recurring Expenses",
+          url: "/expenses/recurring",
         },
       ],
     },
     {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
+      title: "Assets",
+      icon: IconWallet,
+      url: "/assets",
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "All Assets",
+          url: "/assets",
         },
         {
-          title: "Archived",
-          url: "#",
+          title: "By Type",
+          url: "/assets/types",
+        },
+        {
+          title: "Depreciation",
+          url: "/assets/depreciation",
         },
       ],
     },
   ],
   navSecondary: [
     {
+      title: "Export Data",
+      url: "/export",
+      icon: IconDownload,
+    },
+    {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/help",
       icon: IconHelp,
     },
     {
       title: "Search",
-      url: "#",
+      url: "/search",
       icon: IconSearch,
     },
   ],
   documents: [
     {
       name: "Data Library",
-      url: "#",
+      url: "/data",
       icon: IconDatabase,
     },
     {
-      name: "Reports",
-      url: "#",
+      name: "API Docs",
+      url: "/api-docs",
       icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
     },
   ],
 }
@@ -169,9 +179,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="/">
-                <Image src="/codeguide-logo.png" alt="CodeGuide" width={32} height={32} className="rounded-lg" />
-                <span className="text-base font-semibold font-parkinsans">CodeGuide</span>
+              <Link href="/dashboard">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center">
+                    <IconTrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-base font-semibold">Finance Tracker</span>
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -179,7 +193,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={staticData.navMain} />
-        <NavDocuments items={staticData.documents} />
+        <NavDocuments items={staticData.navFinance} title="Finance Management" />
         <NavSecondary items={staticData.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

@@ -1,90 +1,118 @@
 # Tech Stack Document
 
-This document explains the key technologies chosen for the **codeguide-starter** project. It’s written in everyday language so anyone—technical or not—can understand why each tool was picked and how it supports the application.
+# Tech Stack Document
+
+This document explains, in everyday language, how we built your business finance tracker. It shows which technologies we chose, why we chose them, and how they all work together to give you a smooth, secure, and reliable experience.
 
 ## 1. Frontend Technologies
-The frontend is everything the user sees and interacts with. For this project, we’ve used:
 
-- **Next.js (App Router)**
-  - A React framework that makes page routing, server-side rendering, and API routes very simple.
-  - Enhances user experience by pre-rendering pages on the server or at build time, leading to faster initial load.
-- **React 18**
-  - The underlying library for building user interfaces with reusable components.
-  - Provides a smooth, interactive experience thanks to its virtual DOM and modern hooks.
-- **TypeScript**
-  - A superset of JavaScript that adds types (labels for data).
-  - Helps catch errors early during development and makes the code easier to maintain.
-- **CSS (globals.css & theme.css)**
-  - **globals.css** applies base styles (fonts, colors, resets) across the entire app.
-  - **dashboard/theme.css** defines the look and feel specific to the dashboard area.
-  - This separation keeps styles organized and avoids accidental style conflicts.
+These are the tools we use to build everything you see and interact with in your browser:
 
-By combining these tools, we have a clear structure (Next.js folders for pages and layouts), safer code (TypeScript), and flexible styling with vanilla CSS.
+- **Next.js**  
+  A React-based framework that handles page routing, fast loading, and server-side rendering out of the box. It helps pages load quickly and improves search-engine visibility.
+
+- **TypeScript**  
+  A typed version of JavaScript that catches mistakes early. It makes our code more reliable and easier to maintain over time.
+
+- **Tailwind CSS**  
+  A utility-first styling tool that lets us write clean, responsive, and consistent styles. We set up a green-primary palette so all colors on the dashboard, buttons, and charts look unified.
+
+- **Shadcn UI**  
+  A set of pre-built, accessible React components (buttons, forms, modals, etc.). It speeds up development and ensures UI elements follow best accessibility practices.
+
+- **Chart.js (via react-chartjs-2)**  
+  A popular charting library wrapped for React. We use it for your line charts, bar charts, and tables, complete with tooltips and hover effects.
 
 ## 2. Backend Technologies
-The backend handles data, user accounts, and the logic behind the scenes. Our choices here are:
 
-- **Next.js API Routes**
-  - Allows us to write server-side code (`route.ts` files) alongside our frontend in the same project.
-  - Runs on Node.js, so we can handle requests like sign-up, sign-in, and data fetching in one place.
-- **Node.js Runtime**
-  - The JavaScript environment on the server that executes our API routes.
-- **bcrypt** (npm package)
-  - A library for hashing passwords securely before storing them.
-  - Ensures that even if someone got access to our data, raw passwords aren’t visible.
-- **(Optional) NextAuth.js or JWT**
-  - While this starter kit shows a custom authentication flow, it can easily integrate services like NextAuth.js for email-based login or JWT (JSON Web Tokens) for stateless sessions.
+Behind the scenes, these tools handle your data, power the AI assistant, and manage exports:
 
-These components work together to receive user credentials, verify or store them securely, manage sessions or tokens, and deliver protected data back to the frontend.
+- **Next.js API Routes**  
+  Built into Next.js, these serverless endpoints receive your chat messages, validate inputs, and coordinate data operations.
+
+- **PostgreSQL**  
+  A reliable, open-source database where all your expenses, incomes, and assets are stored in structured tables.
+
+- **Drizzle ORM**  
+  A lightweight library that translates our database schema into easy-to-use JavaScript/TypeScript calls. It keeps SQL details under the hood and helps us run migrations safely.
+
+- **OpenAI GPT-4.1 API**  
+  Powers the chat-based AI assistant. When you type in a transaction or ask for insights, we send the text to OpenAI, get back structured data or analysis, and present it in the chat and dashboard.
+
+- **ExcelJS**  
+  A JavaScript library that generates Excel (.xlsx) files on the server. When you click Export, it builds a workbook with separate sheets for expenses, income, and assets, including pivot-style summaries.
 
 ## 3. Infrastructure and Deployment
-Infrastructure covers where and how we host the app, as well as how changes get delivered:
 
-- **Git & GitHub**
-  - Version control system (Git) and remote hosting (GitHub) keep track of all code changes and allow team collaboration.
-- **Vercel (or Netlify)**
-  - A popular hosting service optimized for Next.js, with one-click deployments and global content delivery.
-  - Automatically rebuilds and deploys the site whenever code is pushed to the main branch.
-- **GitHub Actions (CI/CD)**
-  - Automates tasks like linting (ESLint), formatting (Prettier), and running any tests you add.
-  - Ensures that only clean, tested code goes live.
+These choices make developing, testing, and deploying your app smooth and scalable:
 
-Together, these tools provide a reliable, scalable setup where every code change is tested and deployed quickly, with minimal manual work.
+- **Git & GitHub**  
+  Version control and remote code hosting. Every change is tracked, reviewed, and safely merged.
+
+- **Docker & Docker Compose**  
+  Containers for local development. They mimic the production environment so "it works on my machine" issues are minimized.
+
+- **Vercel**  
+  Preferred hosting for Next.js apps. It automatically builds, optimizes, and deploys each commit.
+
+- **GitHub Actions**  
+  Continuous Integration/Continuous Deployment (CI/CD) pipelines. On every push, tests run and—if they pass—a new version goes live.
+
+- **Environment Variables (.env)**  
+  Securely stores secrets (database URLs, API keys) outside of the codebase.
 
 ## 4. Third-Party Integrations
-While this starter kit is minimal by design, it already includes or can easily add:
 
-- **bcrypt**
-  - For secure password hashing (included as an npm dependency).
-- **NextAuth.js** (optional)
-  - A full-featured authentication library supporting email/password, OAuth, and more.
-- **Sentry or LogRocket** (optional)
-  - For real-time error tracking and performance monitoring in production.
+We keep integrations focused on your core needs:
 
-These integrations help extend the app’s capabilities without building every feature from scratch.
+- **OpenAI**  
+  For the GPT-4.1 AI assistant that handles natural-language inputs and financial insights.
+
+- **ExcelJS**  
+  To create downloadable Excel reports that mirror your dashboard data.
+
+_No payment processors, bank APIs, or analytics tools are integrated in this version._
 
 ## 5. Security and Performance Considerations
-We’ve baked in several measures to keep users safe and the app running smoothly:
 
-Security:
-- Passwords are never stored in plain text—bcrypt hashes them with a random salt.
-- API routes can implement CSRF protection and input validation to block malicious requests.
-- Session tokens or cookies are marked secure and HttpOnly to prevent theft via JavaScript.
+Keeping your data safe and the app fast were top priorities:
 
-Performance:
-- Server-side rendering (SSR) and static site generation (SSG) in Next.js deliver pages faster.
-- Code splitting and lazy-loaded components ensure users only download what they need.
-- Global CSS and theme files are small and cached by the browser for quick repeat visits.
+- **Authentication & Session Management**  
+  We use NextAuth.js (built into Next.js) for secure sign-up, sign-in, password hashing, and session handling.
 
-These strategies work together to give users a fast, secure experience every time.
+- **HTTPS Everywhere**  
+  All data in transit is encrypted.
+
+- **CSRF Protection & CORS Rules**  
+  Guard against unauthorized requests.
+
+- **Input Validation**  
+  On both the chat interface and API side, we check that dates, amounts, and categories look correct before saving.
+
+- **Database Indexes & Query Optimization**  
+  Fast lookups on date and category fields to keep the dashboard responsive.
+
+- **Code Splitting & Lazy Loading**  
+  Only load charting code and dashboard widgets when you actually visit those pages, reducing initial load time.
 
 ## 6. Conclusion and Overall Tech Stack Summary
-In building **codeguide-starter**, we chose technologies that:
 
-- Align with modern web standards (Next.js, React, TypeScript).
-- Provide a clear, file-based project structure for rapid onboarding.
-- Offer built-in support for server-side rendering, API routes, and static assets.
-- Emphasize security through password hashing, session management, and safe defaults.
-- Enable easy scaling and future enhancements via modular code and optional integrations.
+Your finance tracker is powered by a modern, well-integrated stack:
 
-This stack strikes a balance between simplicity for newcomers and flexibility for experienced teams. It accelerates development of a secure authentication flow and a polished dashboard, while leaving room to plug in databases, test suites, and advanced features as the project grows.
+- Frontend: Next.js, TypeScript, Tailwind CSS, Shadcn UI, Chart.js
+- Backend: Next.js API Routes, PostgreSQL, Drizzle ORM, OpenAI GPT-4.1, ExcelJS
+- Infrastructure: Git/GitHub, Docker, Vercel, GitHub Actions
+- Security & Performance: NextAuth, HTTPS, CSRF/CORS, validation, indexing, code splitting
+
+Each choice aligns with your goal of a clean, conversational data-entry interface, a green-themed interactive dashboard, and reliable Excel exports. This stack ensures ease of development today and room to grow—whether that means adding bank integrations, multi-user roles, or more chart types in the future.
+
+
+---
+**Document Details**
+- **Project ID**: ec473bf4-ddb2-4ff4-8740-6df58f387758
+- **Document ID**: fff180af-9a0f-48f0-b67f-ce012d1dcff5
+- **Type**: custom
+- **Custom Type**: tech_stack_document
+- **Status**: completed
+- **Generated On**: 2025-10-02T11:34:30.362Z
+- **Last Updated**: N/A

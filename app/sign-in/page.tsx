@@ -32,7 +32,7 @@ export default function SignInPage() {
             if (result.error) {
                 setError(result.error.message || "Sign in failed");
             } else {
-                router.push("/dashboard");
+                router.push("/chat");
             }
         } catch (err) {
             setError("An unexpected error occurred");

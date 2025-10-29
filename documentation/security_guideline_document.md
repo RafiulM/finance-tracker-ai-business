@@ -1,116 +1,199 @@
-# Security Guidelines for codeguide-starter
+# Security Guideline Document
 
-This document defines mandatory security principles and implementation best practices tailored to the **codeguide-starter** repository. It aligns with Security-by-Design, Least Privilege, Defense-in-Depth, and other core security tenets. All sections reference specific areas of the codebase (e.g., `/app/api/auth/route.ts`, CSS files, environment configuration) to ensure practical guidance.
+# Implementation Plan: Business Finance Tracker
 
----
-
-## 1. Security by Design
-
-• Embed security from day one: review threat models whenever adding new features (e.g., new API routes, data fetching).
-• Apply “secure defaults” in Next.js configuration (`next.config.js`), enabling strict mode and disabling debug flags in production builds.
-• Maintain a security checklist in your PR template to confirm that each change has been reviewed against this guideline.
+This plan outlines a step-by-step strategy for building a secure, resilient, and maintainable web-based business finance tracker with an AI assistant. Each phase incorporates security best practices by design.
 
 ---
 
-## 2. Authentication & Access Control
+## 1. Project Initialization
 
-### 2.1 Password Storage
-- Use **bcrypt** (or Argon2) with a per-user salt to hash passwords in `/app/api/auth/route.ts`.
-- Enforce a strong password policy on both client and server: minimum 12 characters, mixed case, numbers, and symbols.
+1. **Repository & Tooling**
+   - Initialize a Git repository with a clear branching strategy (e.g., `main`, `develop`, feature branches).
+   - Add a `.gitignore` for Node.js, Env files, and OS artifacts.
+   - Enable commit signing and require pull‐request reviews before merges.
 
-### 2.2 Session Management
-- Issue sessions via Secure, HttpOnly, SameSite=strict cookies. Do **not** expose tokens to JavaScript.
-- Implement absolute and idle timeouts. For example, invalidate sessions after 30 minutes of inactivity.
-- Protect against session fixation by regenerating session IDs after authentication.
+2. **Dependency Management**
+   - Use `package.json` and `package-lock.json` to lock dependencies.
+   - Vet all dependencies (SCA scan) and remove unused packages to minimize attack surface.
+   - Integrate a vulnerability scanner (e.g., Snyk or GitHub Dependabot).
 
-### 2.3 Brute-Force & Rate Limiting
-- Apply rate limiting at the API layer (e.g., using `express-rate-limit` or Next.js middleware) on `/api/auth` to throttle repeated login attempts.
-- Introduce exponential backoff or temporary lockout after N failed attempts.
-
-### 2.4 Role-Based Access Control (Future)
-- Define user roles in your database model (e.g., `role = 'user' | 'admin'`).
-- Enforce server-side authorization checks in every protected route (e.g., in `dashboard/layout.tsx` loader functions).
+3. **Environment Configuration**
+   - Define `NODE_ENV` (development/production) to disable debug features in production.
+   - Store secrets (DB credentials, OpenAI API key) in a secure vault or environment variables; never commit to VCS.
+   - Create `.env.example` to document required variables without exposing values.
 
 ---
 
-## 3. Input Handling & Processing
+## 2. Infrastructure & CI/CD Setup
 
-### 3.1 Validate & Sanitize All Inputs
-- On **client** (`sign-up/page.tsx`, `sign-in/page.tsx`): perform basic format checks (email regex, password length).
-- On **server** (`/app/api/auth/route.ts`): re-validate inputs with a schema validator (e.g., `zod`, `Joi`).
-- Reject or sanitize any unexpected fields to prevent injection attacks.
+1. **Development Environment**
+   - Use Docker Compose for local Postgres and API server; map only necessary ports.
+   - Secure Docker containers with minimal privileges; avoid `--privileged`.
 
-### 3.2 Prevent Injection
-- If you introduce a database later, always use parameterized queries or an ORM (e.g., Prisma) rather than string concatenation.
-- Avoid dynamic `eval()` or template rendering with unsanitized user input.
+2. **CI/CD Pipeline**
+   - Automate linting, type‐checking, and tests on each PR.
+   - Run SCA and static analysis (ESLint, Prettier, and TypeScript).  
+   - Deploy to staging upon merge to `develop` and to production upon merge to `main`.
 
-### 3.3 Safe Redirects
-- When redirecting after login or logout, validate the target against an allow-list to prevent open redirects.
-
----
-
-## 4. Data Protection & Privacy
-
-### 4.1 Encryption & Secrets
-- Enforce HTTPS/TLS 1.2+ for all front-end ↔ back-end communications.
-- Never commit secrets—use environment variables and a secrets manager (e.g., AWS Secrets Manager, Vault).
-
-### 4.2 Sensitive Data Handling
-- Do ​not​ log raw passwords, tokens, or PII in server logs. Mask or redact any user identifiers.
-- If storing PII in `data.json` or a future database, classify it and apply data retention policies.
+3. **Hosting & TLS**
+   - Host on a platform that enforces TLS 1.2+ (e.g., Vercel for Next.js, AWS with managed certs).
+   - Enable HTTP Strict Transport Security (HSTS).
 
 ---
 
-## 5. API & Service Security
+## 3. Database Design & Security
 
-### 5.1 HTTPS Enforcement
-- In production, redirect all HTTP traffic to HTTPS (e.g., via Vercel’s redirect rules or custom middleware).
+1. **Schema Definition (Drizzle ORM)**
+   - Tables: `users`, `expenses`, `incomes`, `assets`.
+   - Enforce NOT NULL and appropriate data types (e.g., `DATE`, `NUMERIC(12,2)`).
 
-### 5.2 CORS
-- Configure `next.config.js` or API middleware to allow **only** your front-end origin (e.g., `https://your-domain.com`).
+2. **Least Privilege**
+   - Create a dedicated DB user with only required privileges (SELECT/INSERT/UPDATE/DELETE on app tables).
+   - Disable superuser access.
 
-### 5.3 API Versioning & Minimal Exposure
-- Version your API routes (e.g., `/api/v1/auth`) to handle future changes without breaking clients.
-- Return only necessary fields in JSON responses; avoid leaking internal server paths or stack traces.
-
----
-
-## 6. Web Application Security Hygiene
-
-### 6.1 CSRF Protection
-- Use anti-CSRF tokens for any state-changing API calls. Integrate Next.js CSRF middleware or implement synchronizer tokens stored in cookies.
-
-### 6.2 Security Headers
-- In `next.config.js` (or a custom server), add these headers:
-  - `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
-  - `X-Content-Type-Options: nosniff`
-  - `X-Frame-Options: DENY`
-  - `Referrer-Policy: no-referrer-when-downgrade`
-  - `Content-Security-Policy`: restrict script/style/src to self and trusted CDNs.
-
-### 6.3 Secure Cookies
-- Set `Secure`, `HttpOnly`, `SameSite=Strict` on all cookies. Avoid storing sensitive data in `localStorage`.
-
-### 6.4 Prevent XSS
-- Escape or encode all user-supplied data in React templates. Avoid `dangerouslySetInnerHTML` unless content is sanitized.
+3. **Encryption & Backups**
+   - Enable data‐at‐rest encryption if supported.
+   - Schedule regular, encrypted backups and test restores.
 
 ---
 
-## 7. Infrastructure & Configuration Management
+## 4. Authentication & Access Control
 
-- Harden your hosting environment (e.g., Vercel/Netlify) by disabling unnecessary endpoints (GraphQL/GraphiQL playgrounds in production).
-- Rotate secrets and API keys regularly via your secrets manager.
-- Maintain minimal privileges: e.g., database accounts should only have read/write on required tables.
-- Keep Node.js, Next.js, and all system packages up to date.
+1. **User Model & Passwords**
+   - Single user account per business.  
+   - Enforce strong password policy (min length, complexity).  
+   - Hash passwords with Argon2 or bcrypt + unique salt.
+
+2. **Session Management**
+   - Use secure, HTTPOnly, SameSite cookies for session tokens.  
+   - Enforce short idle and absolute timeouts (e.g., 15 min idle, 8 hr absolute).
+   - Implement logout to invalidate session server‐side.
+
+3. **CSRF Protection**
+   - Use Anti-CSRF tokens on all state‐changing Next.js API routes.
+
+4. **RBAC & Future MFA**
+   - Plan roles (`admin`, `view-only`) in DB for extensibility.
+   - Design hooks for future MFA integration (e.g., TOTP).
 
 ---
 
-## 8. Dependency Management
+## 5. Backend API Development
 
-- Commit and maintain `package-lock.json` to guarantee reproducible builds.
-- Integrate a vulnerability scanner (e.g., GitHub Dependabot, Snyk) to monitor and alert on CVEs in dependencies.
-- Trim unused packages; each added library increases the attack surface.
+1. **Next.js API Routes**
+   - Organize endpoints: `/api/auth`, `/api/expenses`, `/api/incomes`, `/api/assets`, `/api/export`, `/api/ai`.
+   - Enforce HTTPS, require authentication middleware.
+
+2. **Input Validation & Sanitization**
+   - Use a schema validation library (e.g., Zod) for all request bodies and query params.
+   - Reject invalid data with generic error messages.
+
+3. **Database Access**
+   - Use Drizzle ORM prepared statements to prevent SQL injection.
+   - Wrap DB calls in try/catch and fail securely without leaking stack traces.
+
+4. **Rate Limiting & Throttling**
+   - Implement per-IP or per-user rate limits on AI endpoints to avoid abuse.
+
+5. **Error Handling**
+   - Centralize error responses; log detailed errors server‐side, return generic messages to clients.
 
 ---
 
-Adherence to these guidelines will ensure that **codeguide-starter** remains secure, maintainable, and resilient as it evolves. Regularly review and update this document to reflect new threats and best practices.
+## 6. AI Assistant Integration
+
+1. **OpenAI GPT-4.1 Wrapper**
+   - Create a service module that handles prompt construction, streaming, and token usage limits.
+   - Validate user queries to avoid prompt injection.
+
+2. **Security Controls**
+   - Do not log full prompts or responses; redact PII.
+   - Enforce token expiration and rotate OpenAI API key periodically.
+
+3. **Use Cases**
+   - Data entry: parse user messages into structured transactions.
+   - Insights: cash-flow forecast, anomaly detection, tax summary.
+
+---
+
+## 7. Frontend Implementation
+
+1. **Next.js + TypeScript + Tailwind CSS**
+   - Enable strict TS checks.  
+   - Use Shadcn UI components, customizing global styles to apply a green theme.
+
+2. **Authentication Flow**
+   - Build login/sign-up pages with form validation (Zod) and error feedback.
+   - Protect pages via server‐side props or client‐side guards.
+
+3. **Chat Interface**
+   - Implement streaming UI for AI messages.
+   - Sanitize and escape all AI‐rendered content to prevent XSS.
+
+4. **Dashboard Components**
+   - Line and bar charts with a charting library (e.g., Recharts); fetch filtered data via secure API calls.
+   - Tables with pagination and sorting; never expose raw SQL results to the client.
+
+5. **Excel Export**
+   - Call `/api/export` with filters; generate `.xlsx` server‐side (e.g., `exceljs`).
+   - Stream file download with correct `Content-Disposition` headers; validate params to prevent unintended data leaks.
+
+6. **Security Headers**
+   - Add CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy via Next.js `headers()`.
+
+7. **CORS**
+   - If APIs are on a separate subdomain, restrict allowed origins.
+
+---
+
+## 8. Testing & Quality Assurance
+
+1. **Unit & Integration Tests**
+   - Test API routes, validation schemas, and DB operations.
+   - Mock OpenAI responses for AI workflows.
+
+2. **End-to-End (E2E) Tests**
+   - Use Playwright to cover critical flows: signup, login, data entry, dashboard view, export.
+
+3. **Security Testing**
+   - Run OWASP ZAP or Burp for automated scans.
+   - Perform manual tests for XSS, CSRF, and access control.
+
+---
+
+## 9. Deployment & Monitoring
+
+1. **Production Hardening**
+   - Enable Next.js production optimizations.
+   - Disable source maps and debug logs.
+
+2. **Logging & Alerting**
+   - Capture structured logs (error level only) to a central service.
+   - Configure alerts for failed logins, high error rates, and rate-limit breaches.
+
+3. **Health Checks & Backups**
+   - Expose a health endpoint for uptime monitoring.
+   - Verify automated DB backups and retention policies.
+
+---
+
+## 10. Maintenance & Continuous Improvement
+
+- **Regular Dependency Updates:** Schedule quarterly reviews of dependencies and apply security patches promptly.  
+- **Periodic Security Audits:** Conduct annual third‐party audits and pen tests.  
+- **Feature Extensions:** Plan RBAC expansions, MFA rollout, and additional AI insights based on user feedback.
+
+---
+
+By following this plan, we ensure a secure, maintainable, and user-friendly business finance tracker aligned with best practices and robust security principles.
+
+---
+**Document Details**
+- **Project ID**: ec473bf4-ddb2-4ff4-8740-6df58f387758
+- **Document ID**: d9437773-dd7a-4502-bff1-1450279d9b92
+- **Type**: custom
+- **Custom Type**: security_guideline_document
+- **Status**: completed
+- **Generated On**: 2025-10-02T11:35:04.216Z
+- **Last Updated**: N/A

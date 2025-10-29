@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Parkinsans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { BusinessCheckProvider } from "@/components/business-check-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,9 +20,8 @@ const parkinsans = Parkinsans({
 });
 
 export const metadata: Metadata = {
-  title: "Codeguide Starter Fullstack",
-  description:
-    "A modern Next.js starter with TypeScript, TailwindCSS, shadcn/ui, Better Auth, and Drizzle ORM",
+  title: "AI Finance Tracker",
+  description: "Track your business expenses, income, and assets with AI-powered insights",
 };
 
 export default function RootLayout({
@@ -40,7 +40,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <BusinessCheckProvider>
+            {children}
+          </BusinessCheckProvider>
         </ThemeProvider>
       </body>
     </html>
